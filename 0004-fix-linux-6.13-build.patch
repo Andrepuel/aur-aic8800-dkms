@@ -1,0 +1,94 @@
+diff --git a/aic8800_fdrv/rwnx_main.c b/aic8800_fdrv/rwnx_main.c
+index 731b89e..b390891 100644
+--- a/aic8800_fdrv/rwnx_main.c
++++ b/aic8800_fdrv/rwnx_main.c
+@@ -5135,6 +5135,9 @@ cfg80211_chandef_identical(const struct cfg80211_chan_def *chandef1,
+ #endif
+ 
+ static int rwnx_cfg80211_set_monitor_channel(struct wiphy *wiphy,
++#if LINUX_VERSION_CODE >= KERNEL_VERSION (6, 13, 0)
++                                             struct net_device *,
++#endif
+                                              struct cfg80211_chan_def *chandef)
+ {
+     struct rwnx_hw *rwnx_hw = wiphy_priv(wiphy);
+@@ -5629,7 +5632,11 @@ static int rwnx_cfg80211_get_channel(struct wiphy *wiphy,
+     if (rwnx_vif->vif_index == rwnx_hw->monitor_vif)
+     {
+         //retrieve channel from firmware
++#if LINUX_VERSION_CODE >= KERNEL_VERSION (6, 13, 0)
++        rwnx_cfg80211_set_monitor_channel(wiphy, NULL, NULL);
++#else
+         rwnx_cfg80211_set_monitor_channel(wiphy, NULL);
++#endif
+     }
+ 
+     //Check if channel context is valid
+@@ -5813,6 +5820,9 @@ int rwnx_cfg80211_start_radar_detection(struct wiphy *wiphy,
+                                         struct cfg80211_chan_def *chandef
+                                     #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 15, 0))
+                                         , u32 cac_time_ms
++                                    #endif
++                                    #if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0))
++                                        , int link_id
+                                     #endif
+                                         )
+ {
+@@ -9774,8 +9784,12 @@ static void __exit rwnx_mod_exit(void)
+ module_init(rwnx_mod_init);
+ module_exit(rwnx_mod_exit);
+ #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0)
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 13, 0)
++MODULE_IMPORT_NS("VFS_internal_I_am_really_a_filesystem_and_am_NOT_a_driver");
++#else
+ MODULE_IMPORT_NS(VFS_internal_I_am_really_a_filesystem_and_am_NOT_a_driver);
+ #endif
++#endif
+ MODULE_FIRMWARE(RWNX_CONFIG_FW_NAME);
+ 
+ MODULE_DESCRIPTION(RW_DRV_DESCRIPTION);
+diff --git a/aic8800_fdrv/rwnx_radar.c b/aic8800_fdrv/rwnx_radar.c
+index e6dc578..da003bf 100644
+--- a/aic8800_fdrv/rwnx_radar.c
++++ b/aic8800_fdrv/rwnx_radar.c
+@@ -1399,7 +1399,11 @@ static void rwnx_radar_cac_work(struct work_struct *ws)
+                     #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 14, 0)
+                        &ctxt->chan_def,
+                     #endif
++                    #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
++                       NL80211_RADAR_CAC_FINISHED, GFP_KERNEL, 0);
++                    #else
+                        NL80211_RADAR_CAC_FINISHED, GFP_KERNEL);
++                    #endif
+     rwnx_send_apm_stop_cac_req(rwnx_hw, radar->cac_vif);
+     rwnx_chanctx_unlink(radar->cac_vif);
+ 
+@@ -1499,7 +1503,11 @@ void rwnx_radar_cancel_cac(struct rwnx_radar *radar)
+                         #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 14, 0)
+                            &ctxt->chan_def,
+                         #endif
++                        #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
++                           NL80211_RADAR_CAC_ABORTED, GFP_KERNEL, 0);
++                        #else
+                            NL80211_RADAR_CAC_ABORTED, GFP_KERNEL);
++                        #endif
+         rwnx_chanctx_unlink(radar->cac_vif);
+     }
+ 
+diff --git a/aic_load_fw/aic_bluetooth_main.c b/aic_load_fw/aic_bluetooth_main.c
+index be05052..25ecda0 100644
+--- a/aic_load_fw/aic_bluetooth_main.c
++++ b/aic_load_fw/aic_bluetooth_main.c
+@@ -70,8 +70,12 @@ module_init(aic_bluetooth_mod_init);
+ module_exit(aic_bluetooth_mod_exit);
+ 
+ #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0)
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 13, 0)
++MODULE_IMPORT_NS("VFS_internal_I_am_really_a_filesystem_and_am_NOT_a_driver");
++#else
+ MODULE_IMPORT_NS(VFS_internal_I_am_really_a_filesystem_and_am_NOT_a_driver);
+ #endif
++#endif
+ 
+ MODULE_FIRMWARE(DRV_CONFIG_FW_NAME);
+ MODULE_DESCRIPTION(DRV_DESCRIPTION);

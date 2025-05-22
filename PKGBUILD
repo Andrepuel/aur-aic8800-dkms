@@ -1,7 +1,7 @@
 # Maintainer: Franck Duriez <franck@duriez.info>
 
 pkgname=aic8800-dkms
-pkgver=1.0.5
+pkgver=1.0.6
 pkgrel=1
 
 pkgdesc="Kernel modules for BrosTrend AX300 WiFi 6"
@@ -14,9 +14,11 @@ source=(
   '0001-Make-CONFIG_RFTEST-n-valid.patch'
   '0002-Fix-DKMS-config.patch'
   '0003-Fix-kernel-logs.patch'
+  '0004-fix-linux-6.13-build.patch'
 )
 sha512sums=(
-  '4b4917a510caf1104ae7124f883b958d6a936a6e172d1afcc79f58349a943e0feb9a8bb35d326f96c56e0b089d62e3359cf81967e01e1edb1a1ddfc6fe101da0'
+  'SKIP'
+  'SKIP'
   'SKIP'
   'SKIP'
   'SKIP'
@@ -29,6 +31,7 @@ prepare() {
   patch -Np1 -i ../../../../0001-Make-CONFIG_RFTEST-n-valid.patch -d .
   patch -Np1 -i ../../../../0002-Fix-DKMS-config.patch -d .
   patch -Np1 -i ../../../../0003-Fix-kernel-logs.patch -d .
+  patch -Np1 -i ../../../../0004-fix-linux-6.13-build.patch -d .
 }
 
 build() {
