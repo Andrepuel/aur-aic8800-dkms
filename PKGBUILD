@@ -32,6 +32,8 @@ prepare() {
   patch -Np1 -i ../../../../0002-Fix-DKMS-config.patch -d .
   patch -Np1 -i ../../../../0003-Fix-kernel-logs.patch -d .
   patch -Np1 -i ../../../../0004-fix-linux-6.13-build.patch -d .
+  # adapt for 6.15.2-arch1-1
+  find . -name "*.c" -o -name "*.h" | xargs sed -i 's/del_timer/timer_delete/g' 
 }
 
 build() {
